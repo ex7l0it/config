@@ -1,0 +1,70 @@
+snippet pwn "ctf-pwn template"
+from pwn import *
+from LibcSearcher import LibcSearcher
+import os
+
+ARCH="${1}"
+LOGLEVEL="debug"
+BINARY="${2}"
+REMOTE_HOST = ""
+REMOTE_PORT = 40000
+
+gs = '''
+# break *0x
+continue
+'''
+
+context.update(arch=ARCH, log_level=LOGLEVEL, terminal=['tmux', 'splitw', '-h'])
+elf = context.binary = ELF(BINARY)
+
+try:
+	libc = ELF(os.path.join(os.path.dirname(elf.runpath), 'libc.so.6'))
+except Exception:
+	pass
+
+rop = ROP(elf)
+
+def start():
+	if args.GDB:
+		return gdb.debug(elf.path, gdbscript=gs)
+	elif args.ATTACH:
+		proc = elf.process()
+		gdb.attach(proc, gs)
+		return proc
+	elif args.REMOTE:
+		return remote(REMOTE_HOST, REMOTE_PORT)
+	else:
+		return elf.process()
+
+if __name__ == '__main__':
+	io = start()
+
+	${3}
+
+	io.interactive()
+endsnippet
+
+snippet libc "ctf-pwn-libc template"
+TARGET_FUNNAME = '${1}'
+TARGET_ADDRESS = '${2}'
+libc = LibcSearcher(TARGET_FUNNAME, TARGET_ADDRESS)
+libc_base = TARGET_ADDRESS - libc.dump(TARGET_FUNNAME)
+system_add = libc_base + libc.dump('system')
+bin_sh_add = libc_base + libc.dump('str_bin_sh')
+
+log.info('libc@: {:#x}'.format(libc_base))
+log.info('system@libc: {:#x}'.format(system_add))
+log.info('str_bin_sh@libc: {:#x}'.format(bin_sh_add))
+
+endsnippet
+
+snippet fmt "ctf-pwn-fmt template"
+def exec_fmt(payload):
+	io.sendline(payload)
+	return io.recv()
+
+auto = FmtStr(exec_fmt)
+offset = auto.offset
+payload = fmtstr_payload(offset, {${1}: ${2}})
+
+endsnippet
