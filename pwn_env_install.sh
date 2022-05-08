@@ -35,9 +35,10 @@ function install_basic_software
 	sudo apt install -y open-vm-tools open-vm-tools-desktop
 	# install some software
 	sudo apt install -y ssh vim net-tools gdb git zsh tmux lrzsz proxychains curl ruby ncat \
-	make cmake gcc g++ python3-pip ipython3 patchelf binutils build-essential
+	make cmake gcc g++ python3-pip ipython3 patchelf binutils build-essential qemu
 	# install some libs
 	sudo apt install -y lib32ncurses5-dev lib32z1 lib32z1-dev libssl-dev ruby-dev
+	sudo apt install -y flex libncurses5-dev bison libssl-dev libelf-dev
 	
 }
 
@@ -136,13 +137,13 @@ function download_glibc
 			# patchelf configure
 			res=`cat ~/.zshrc | grep "patchelf" | wc -l`
 			if [ $res -eq 0 ]; then 
-			echo -e "\n# patchelf\n\
-			alias p32_u16='patchelf --set-interpreter /opt/glibc-all-in-one/libs/2.23-0ubuntu11.3_i386/ld-2.23.so --set-rpath /opt/glibc-all-in-one/libs/2.23-0ubuntu11.3_i386'\n\
-			alias p64_u16='patchelf --set-interpreter /opt/glibc-all-in-one/libs/2.23-0ubuntu11.3_amd64/ld-2.23.so --set-rpath /opt/glibc-all-in-one/libs/2.23-0ubuntu11.3_amd64'\n\
-			alias p32_u18='patchelf --set-interpreter /opt/glibc-all-in-one/libs/2.27-3ubuntu1_i386/ld-2.27.so --set-rpath /opt/glibc-all-in-one/libs/2.27-3ubuntu1_i386'\n\
-			alias p64_u18='patchelf --set-interpreter /opt/glibc-all-in-one/libs/2.27-3ubuntu1_amd64/ld-2.27.so --set-rpath /opt/glibc-all-in-one/libs/2.27-3ubuntu1_amd64'\n\
-			alias p64-ld23='patchelf --set-interpreter /opt/glibc-all-in-one/libs/2.23-0ubuntu11.3_amd64/ld-2.23.so --replace-needed libc.so.6'\n\
-			alias p64-ld27='patchelf --set-interpreter /opt/glibc-all-in-one/libs/2.27-3ubuntu1_amd64/ld-2.27.so --replace-needed libc.so.6'" >> ~/.zshrc
+echo -e "\n# patchelf\n\
+alias p32_u16='patchelf --set-interpreter /opt/glibc-all-in-one/libs/2.23-0ubuntu11.3_i386/ld-2.23.so --set-rpath /opt/glibc-all-in-one/libs/2.23-0ubuntu11.3_i386'\n\
+alias p64_u16='patchelf --set-interpreter /opt/glibc-all-in-one/libs/2.23-0ubuntu11.3_amd64/ld-2.23.so --set-rpath /opt/glibc-all-in-one/libs/2.23-0ubuntu11.3_amd64'\n\
+alias p32_u18='patchelf --set-interpreter /opt/glibc-all-in-one/libs/2.27-3ubuntu1_i386/ld-2.27.so --set-rpath /opt/glibc-all-in-one/libs/2.27-3ubuntu1_i386'\n\
+alias p64_u18='patchelf --set-interpreter /opt/glibc-all-in-one/libs/2.27-3ubuntu1_amd64/ld-2.27.so --set-rpath /opt/glibc-all-in-one/libs/2.27-3ubuntu1_amd64'\n\
+alias p64-ld23='patchelf --set-interpreter /opt/glibc-all-in-one/libs/2.23-0ubuntu11.3_amd64/ld-2.23.so --replace-needed libc.so.6'\n\
+alias p64-ld27='patchelf --set-interpreter /opt/glibc-all-in-one/libs/2.27-3ubuntu1_amd64/ld-2.27.so --replace-needed libc.so.6'" >> ~/.zshrc
 			fi
 		fi
 	fi
@@ -216,11 +217,11 @@ function self_setting
 	# aslr
 	res=`cat ~/.zshrc | grep "# User's alias" | wc -l`
 	if [ $res -eq 0 ]; then 
-	echo -e "\n# User's alias\n\
-	alias offaslr='sudo sysctl -w kernel.randomize_va_space=0' \ 
-	alias onaslr='sudo sysctl -w kernel.randomize_va_space=2' \
-	alias syscall64='cat /usr/include/x86_64-linux-gnu/asm/unistd_64.h | grep ' \
-	alias syscall32='cat /usr/include/x86_64-linux-gnu/asm/unistd_32.h | grep '>> ~/.zshrc"
+echo -e "\n# User's alias\n\
+alias offaslr='sudo sysctl -w kernel.randomize_va_space=0' \ 
+alias onaslr='sudo sysctl -w kernel.randomize_va_space=2' \
+alias syscall64='cat /usr/include/x86_64-linux-gnu/asm/unistd_64.h | grep ' \
+alias syscall32='cat /usr/include/x86_64-linux-gnu/asm/unistd_32.h | grep '" >> ~/.zshrc
 	fi
 	# sudo nopasswd
 	res=`sudo cat /etc/sudoers | grep "$USER ALL=(ALL:ALL) NOPASSWD:ALL" | wc -l`
