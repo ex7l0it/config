@@ -217,10 +217,10 @@ function self_setting
 	# aslr
 	res=`cat ~/.zshrc | grep "# User's alias" | wc -l`
 	if [ $res -eq 0 ]; then 
-echo -e "\n# User's alias\n\
-alias offaslr='sudo sysctl -w kernel.randomize_va_space=0' \ 
-alias onaslr='sudo sysctl -w kernel.randomize_va_space=2' \
-alias syscall64='cat /usr/include/x86_64-linux-gnu/asm/unistd_64.h | grep ' \
+echo -e "\n# User's alias\n
+alias offaslr='sudo sysctl -w kernel.randomize_va_space=0'\n 
+alias onaslr='sudo sysctl -w kernel.randomize_va_space=2'\n
+alias syscall64='cat /usr/include/x86_64-linux-gnu/asm/unistd_64.h | grep '\n
 alias syscall32='cat /usr/include/x86_64-linux-gnu/asm/unistd_32.h | grep '" >> ~/.zshrc
 	fi
 	# sudo nopasswd
