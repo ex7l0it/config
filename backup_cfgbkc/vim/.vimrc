@@ -34,6 +34,10 @@ Plug 'honza/vim-snippets'
 Plug 'chxuan/prepare-code'
 " vim 快速注释
 " Plug 'scrooloose/nerdcommenter'
+" vim 语法高亮
+Plug 'sheerun/vim-polyglot' 
+" wakatime
+Plug 'wakatime/vim-wakatime'
 
 call plug#end()
 
@@ -110,6 +114,18 @@ if has('viminfo')
     autocmd BufWinEnter ?* silent loadview     " 在进入缓冲区时加载视图
 endif
 
+" 配置粘贴时自动切换为粘贴模式
+let &t_SI .= "\<Esc>[?2004h"
+let &t_EI .= "\<Esc>[?2004l"
+
+inoremap <special> <expr> <Esc>[200~ XTermPasteBegin()
+
+function! XTermPasteBegin()
+  set pastetoggle=<Esc>[201~
+  set paste
+  return ""
+endfunction
+
 " 自定义映射
 " 定义<leader>键
 let mapleader = ","
@@ -129,6 +145,8 @@ nnoremap <C-m> :TagbarToggle<CR>
 nnoremap U <C-r>
 " 修改连按kj为ESC
 inoremap kj <ESC>
+" 重复上次执行的命令
+nnoremap ..c @:
 
 " pwn
 nnoremap <leader><leader>r :!%:p<CR>

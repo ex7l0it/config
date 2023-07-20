@@ -1,0 +1,102 @@
+nippet pwn "ctf-pwn template"
+from pwn_ import *
+import os
+
+gs = '''
+# set follow-fork-mode parent
+# break *0x
+continue
+'''
+
+p = ProgInfo(
+    binary="${1}",
+    arch="amd64",
+    libc="${2}",
+    remote="",
+    loglevel="debug",
+    args=args,
+    gdbscript=gs
+)
+
+context.update(arch=p.arch, log_level=p.loglevel, terminal=['tmux', 'splitw', '-h', '-p', '75'])
+elf = context.binary = p.elf
+rop = ROP(p.elf)
+libc = p.libc
+
+if __name__ == '__main__':
+    io = p.start()
+    
+    ${3}
+    
+    io.interactive()
+endsnippet
+
+snippet libc "ctf-pwn-libc template"
+libc_base, system_add, bin_sh_add = p.addr_infos(fname='${1}', faddr=${2}, search=False, online=False)
+
+log.success('libc@: {:#x}'.format(libc_base))
+log.success('system@libc: {:#x}'.format(system_add))
+log.success('str_bin_sh@libc: {:#x}'.format(bin_sh_add))
+
+endsnippet
+
+snippet fmt "ctf-pwn-fmt template"
+def exec_fmt(payload):
+    io = p.start()
+    io.sendline(payload)
+    data = io.recv()
+    io.close()
+    return data
+
+auto = FmtStr(exec_fmt)
+# payload = fmtstr_payload(offset, {${1}: ${2}})
+
+endsnippet
+
+snippet csu "ctf-pwn-ret2csu template"
+def ret2csu(jmp2, arg1=0x0, arg2=0x0, arg3=0x0):
+    part1 = 
+    part2 = 
+    return flat([
+        p64(part1),   # entry of pop_rbx_rbp_r12_r13_r14_r15_ret
+        p64(0x0),     # rbx
+        p64(0x1),     # rbp
+        p64(jmp2),    # r12
+        p64(arg3),    # r13 -> rdx
+        p64(arg2),    # r14 -> rsi
+        p64(arg1),    # r15 -> edi
+        p64(part2),   # entry will call [r12+rbx*8]
+        cyclic(56)    # junk
+    ]) 
+
+endsnippet
+
+snippet heap "ctf-pwn-heap template"
+def malloc(size, data, idx):
+    io.recv()
+    io.sendline(b"1")
+    io.sendlineafter(b"", b"%d" % size)
+    io.sendafter(b"", data)
+    return idx
+
+def edit(idx, size, data):
+    io.recv()
+    io.sendline(b"2")
+    io.sendlineafter(b"", b"%d" % idx)
+    io.sendlineafter(b"", b"%d" % size)
+    io.sendafter(b"", data)
+
+def show(idx):
+    io.recv()
+    io.sendline(b"3")
+    io.sendlineafter(b"", b"%d" % idx)
+    data = io.recv()
+    return data
+
+def free(idx):
+    io.recv()
+    io.sendline(b"4")
+    io.sendlineafter(b"", b"%d" % idx)
+
+endsnippet
+

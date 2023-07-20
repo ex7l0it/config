@@ -1,0 +1,20 @@
+{
+  "config": {
+    "method": "Git",
+    "filename": "",
+    "repo": "git@github.com:ex7l0it/config.git",
+    "branch": "main",
+    "sshkey": "~/.ssh/id_rsa",
+    "subdir": "backup_cfgbkc"
+  },
+  "tasks": {
+    "vim": [
+      "~/.vimrc",
+      "~/.vim/plugged/prepare-code/snippet/snippet.py",
+      "~/.vim/UltiSnips/python.snippets"
+    ],
+    "tmux": [
+      "~/.tmux.conf"
+    ]
+  }
+}

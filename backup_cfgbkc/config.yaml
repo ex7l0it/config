@@ -1,6 +1,0 @@
-- name: vim
-  path: 
-    - ~/.vimrc
-- name: tmux
-  path: 
-    - ~/.tmux.conf
