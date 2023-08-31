@@ -1,12 +1,9 @@
 {
     "config": {
         "method": "git",
-        "repo": "git@github.com:ex7l0it/config.git",
+        "repo": "https://github.com/ex7l0it/config.git",
         "branch": "main",
-        "sshkey": "~/.ssh/id_rsa",
-        "subdir": "backup_cfgbkc",
-        "gituser": "ex7l0it",
-        "gitmail": "1104308780@qq.com"
+        "subdir": "backup_cfgbkc"
     },
     "tasks": {
         "vim": [
