@@ -1,3 +1,10 @@
+" 在 vim 首次启动时自动安装 vim-plug 并执行 :PlugInstall 安装插件
+if empty(glob('~/.vim/autoload/plug.vim'))
+    slient !curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    autocmd VimEnter * PlugInstall | source $MYVIMRC
+endif
+
 call plug#begin()
 
 " vim 启动屏幕，可显示最近打开的文件

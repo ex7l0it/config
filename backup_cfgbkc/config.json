@@ -1,7 +1,7 @@
 {
     "config": {
         "method": "git",
-        "repo": "https://github.com/ex7l0it/config.git",
+        "repo": "https://github.com/ex7l0it/config",
         "branch": "main",
         "subdir": "backup_cfgbkc"
     },
